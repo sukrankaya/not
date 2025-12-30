@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>📖 Kitap Not Defteri</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap');
+
+:root{--bg:#fff;--line:#e0e0e0;--primary:#6c63ff}
+body{
+  margin:0;
+  font-family:'Patrick Hand',cursive;
+  background:transparent;
+  overflow:hidden; 
+  padding: 25px;
+}
+html, body{
+  height: 100%;
+  margin: 0;
+  overflow: hidden; /* 🔥 iç scroll BİTER */
+}
+.app{
+  width:100%;
+  padding:12px;
+  border-radius:15px;
+  box-shadow:0 5px 15px rgba(0,0,0,.2);
+  background:#fff;
+}
+
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:14px;
+  margin-bottom:5px;
+}
+
+#tarih{opacity:.7}
+
+textarea{
+  width:100%;
+  height:170px;
+  resize:none;
+  padding:10px;
+  border:none;
+  outline:none;
+  background:repeating-linear-gradient(
+    #fff,
+    #fff 26px,
+    var(--line) 27px
+  );
+  font-family:'Patrick Hand',cursive;
+  font-size:18px;
+}
+
+.alt{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin:6px 0;
+}
+
+button{
+  border:none;
+  padding:6px 10px;
+  border-radius:8px;
+  background:var(--primary);
+  color:#fff;
+  cursor:pointer;
+}
+
+button.sil{background:#ff5252}
+button.fav{background:#ffa726}
+
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <strong>📖 Not Defteri</strong>
+    <span id="tarih"></span>
+  </header>
+
+  <textarea id="metin" placeholder="Bugünkü notunu yaz..."></textarea>
+
+  <div class="alt">
+    <button onclick="onceki()">⬅️</button>
+    <span id="sayfaNo">1 / 1</span>
+    <button onclick="sonraki()">➡️</button>
+  </div>
+
+  <div class="alt">
+    <button onclick="kaydet()">💾 Kaydet</button>
+    <button class="fav" onclick="favori()">🔖</button>
+    <button class="sil" onclick="sil()">🗑️</button>
+  </div>
+</div>
+
+<script>
+let sayfalar = JSON.parse(localStorage.getItem('sayfalar')) || [];
+let aktif = sayfalar.length ? sayfalar.length-1 : 0;
+
+function guncelle(){
+  if(sayfalar.length===0){
+    metin.value='';
+    tarih.innerText='';
+    sayfaNo.innerText='0 / 0';
+    return;
+  }
+  metin.value=sayfalar[aktif].metin;
+  tarih.innerText=sayfalar[aktif].tarih + (sayfalar[aktif].fav?' 🔖':'');
+  sayfaNo.innerText=`${aktif+1} / ${sayfalar.length}`;
+}
+
+function kaydet(){
+  const t=new Date().toLocaleString('tr-TR');
+  if(sayfalar[aktif]){
+    sayfalar[aktif].metin=metin.value;
+    sayfalar[aktif].tarih=t;
+  }else{
+    sayfalar.push({metin:metin.value,tarih:t,fav:false});
+    aktif=sayfalar.length-1;
+  }
+  localStorage.setItem('sayfalar',JSON.stringify(sayfalar));
+  guncelle();
+}
+
+function onceki(){if(aktif>0){aktif--;guncelle();}}
+
+function sonraki(){
+  if(aktif<sayfalar.length-1){
+    aktif++;
+  }else{
+    sayfalar.push({metin:'',tarih:new Date().toLocaleString('tr-TR'),fav:false});
+    aktif=sayfalar.length-1;
+  }
+  guncelle();
+}
+
+function sil(){
+  if(!sayfalar.length) return;
+  if(confirm('Bu sayfa silinsin mi?')){
+    sayfalar.splice(aktif,1);
+    aktif=Math.max(0,aktif-1);
+    localStorage.setItem('sayfalar',JSON.stringify(sayfalar));
+    guncelle();
+  }
+}
+
+function favori(){
+  if(!sayfalar[aktif])return;
+  sayfalar[aktif].fav=!sayfalar[aktif].fav;
+  localStorage.setItem('sayfalar',JSON.stringify(sayfalar));
+  guncelle();
+}
+
+guncelle();
+</script>
+</body>
+</html>
